@@ -1,0 +1,14 @@
+version: "3"
+services:
+  nginx:
+    image: nginx:1.21.6
+    container_name: nginx_main
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./cert.key:/etc/ssl/cert.key
+      - ./cert.pem:/etc/ssl/cert.pem
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

@@ -1,0 +1,4 @@
+/.vscode
+/nginx/cert.key
+/nginx/cert.pem
+/inventory/static-inventory

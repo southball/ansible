@@ -1,0 +1,27 @@
+---
+- name: Launch Blog Server
+  hosts: web
+  become: false
+  tasks:
+    - name: Update apt cache
+      become: true
+      ansible.builtin.apt: update_cache=yes cache_valid_time=3600
+    - name: Update all apt packages
+      become: true
+      ansible.builtin.apt: upgrade=yes
+    - name: Install dependencies
+      become: true
+      ansible.builtin.apt:
+        name: git
+        state: present
+    - name: Clone blog repository
+      ansible.builtin.git:
+        repo: "https://github.com/southball/blog"
+        dest: /home/{{ ansible_user }}/blog
+        force: true
+    - name: Launch blog container
+      community.docker.docker_compose:
+        project_src: /home/{{ ansible_user }}/blog
+        state: present
+        build: true
+        restarted: true
