@@ -1,5 +1,5 @@
 ---
-- name: Launch Blog Server
+- name: Launch Portfolio Server
   hosts: web
   become: false
   tasks:
@@ -14,16 +14,20 @@
       ansible.builtin.apt:
         name: git
         state: present
-    - name: Clone blog repository
+    - name: Clone portfolio repository
       ansible.builtin.git:
-        repo: "https://github.com/southball/blog"
-        dest: /home/{{ ansible_user }}/blog
+        repo: "https://github.com/southball/portfolio-rails"
+        dest: /home/{{ ansible_user }}/portfolio-rails
         force: true
-    - name: Launch blog container
+    - name: Copy master.key to server  
+      ansible.builtin.copy:
+        src: ./portfolio/master.key
+        dest: /home/{{ ansible_user }}/portfolio-rails/config
+    - name: Launch portfolio container
       community.docker.docker_compose:
-        project_src: /home/{{ ansible_user }}/blog
+        project_src: /home/{{ ansible_user }}/portfolio-rails
         state: present
         build: true
         restarted: true
       environment:
-        PORT: 10001
+        PORT: 10002

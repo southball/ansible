@@ -1,4 +1,5 @@
 /.vscode
 /nginx/cert.key
 /nginx/cert.pem
+/portfolio/master.key
 /inventory/static-inventory
