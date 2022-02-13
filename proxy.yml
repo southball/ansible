@@ -1,0 +1,30 @@
+---
+- name: Setup oauth2-proxy
+  hosts: web
+  become: false
+  tasks:
+    - name: Ensure required Docker SDK is installed
+      ansible.builtin.pip:
+        name: docker-compose
+    - name: Create /home/{{ ansible_user }}/proxy
+      ansible.builtin.file:
+        path: /home/{{ ansible_user }}/proxy
+        state: directory
+    - name: Copy configuration files and certificate to server
+      ansible.builtin.copy:
+        src: ./proxy/{{ item }}
+        dest: /home/{{ ansible_user }}/proxy/{{ item }}
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+      loop:
+        - .env
+        - docker-compose.yml
+        - google-service-account.json
+        - oauth2-proxy.cfg
+    - name: Launch server
+      community.docker.docker_compose:
+        project_src: /home/{{ ansible_user }}/proxy
+        state: present
+        restarted: true
+      environment:
+        PORT: 10003
