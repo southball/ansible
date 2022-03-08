@@ -1,0 +1,55 @@
+---
+- name: Setup Nextcloud
+  hosts: web
+  become: false
+  tasks:
+    - name: Update apt cache
+      become: true
+      ansible.builtin.apt: update_cache=yes cache_valid_time=3600
+    - name: Update all apt packages
+      become: true
+      ansible.builtin.apt: upgrade=yes
+    - name: Install dependencies
+      become: true
+      ansible.builtin.apt:
+        name: git
+        state: present
+    - name: Ensure data directory is created
+      ansible.builtin.file:
+        path: /home/{{ ansible_user }}/nextcloud/data
+        state: directory
+    - name: Create Database
+      community.docker.docker_container:
+        name: nextcloud-db
+        image: postgres:14.2-bullseye
+        state: started
+        published_ports:
+          - 20001:5432
+        mounts:
+          - source: nextcloud-db-data
+            target: /var/lib/postgresql/data
+            type: volume
+        env:
+          POSTGRES_DB: nextcloud
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+    - name: Create Nextcloud container
+      community.docker.docker_container:
+        name: nextcloud-web
+        image: nextcloud:21.0.9-apache
+        state: started
+        published_ports:
+          - 10004:80
+        mounts:
+          - source: /home/{{ ansible_user }}/nextcloud/data
+            target: /var/www/html
+            type: bind
+        etc_hosts:
+          host.docker.internal: host-gateway
+        env:
+          POSTGRES_HOST: host.docker.internal:20001
+          POSTGRES_DB: nextcloud
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          OVERWRITEHOST: drive.southball.dev
+          OVERWRITEPROTOCOL: https

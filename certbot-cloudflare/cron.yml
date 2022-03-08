@@ -1,0 +1,11 @@
+---
+- name: Setup Cron for Certbot Renew
+  hosts: web
+  become: true
+  tasks:
+    - name: Add crontab entry
+      ansible.builtin.cron:
+        name: Certbot Renew Cron
+        user: root
+        job: certbot renew
+        special_time: weekly

@@ -1,0 +1,41 @@
+---
+- name: Setup Certbot using Cloudflare
+  hosts: web
+  become: true
+  vars:
+    config_file_path: /etc/letsencrypt/cloudflare_secret.ini
+  vars_files:
+    - certbot-cloudflare.vars.yml
+  tasks:
+    - name: Check required variables are defined
+      ansible.builtin.assert:
+        that:
+          - email is defined
+          - domains is defined
+          - api_token is defined
+          - config_file_path is defined
+    - name: Create configuration file
+      ansible.builtin.copy:
+        dest: "{{ config_file_path }}"
+        content: |
+          dns_cloudflare_api_token = {{ api_token }}
+    - name: Install certbot snap
+      community.general.snap:
+        classic: true
+        name: certbot
+    - name: Initial certbot setup (idempotent)
+      ansible.builtin.command:
+        argv:
+          - certbot
+          - certonly
+          - -n
+          - --agree-tos
+          - --dns-cloudflare
+          - --dns-cloudflare-credentials
+          - "{{ config_file_path }}"
+          - --dns-cloudflare-propagation-seconds
+          - "60"
+          - --email
+          - "{{ email }}"
+          - -d
+          - "{{ domains | join(',') }}"

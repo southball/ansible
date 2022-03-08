@@ -1,7 +1,12 @@
+# Filenames
+*.vars.yml
+.env
+
+# Absolute Paths
 /.vscode
+/inventory/*
+/nginx/public_files
 /nginx/cert.key
 /nginx/cert.pem
 /portfolio/master.key
-/inventory/static-inventory
-/proxy/.env
 /proxy/google-service-account.json
